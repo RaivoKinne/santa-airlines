@@ -1,0 +1,16 @@
+{
+  "name": "raivo/backend",
+  "description": "server",
+  "autoload": {
+    "psr-4": {
+      "Raivo\\Backend\\": "src/"
+    }
+  },
+  "scripts": {
+    "start": "php -S 0.0.0.0:8080 -t src"
+  },
+  "config": {
+    "process-timeout": 300000
+  },
+  "require": {}
+}
