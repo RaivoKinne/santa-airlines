@@ -38,14 +38,45 @@ const App = () => {
 
   const handleReserveClick = () => {
     if (selectedSeat) {
-      const reservedMessage = `Thank you for your reservation: ${selectedSeat.row} ${selectedSeat.seatLetter}`;
-      setReservedMessage(reservedMessage);
+      const isSeatAlreadyReserved = flights.some((flight) =>
+        flight.seats.some((row) =>
+          row.seats.some(
+            (seat) =>
+              row.rowNumber === selectedSeat.row &&
+              seat.seatLetter === selectedSeat.seatLetter &&
+              seat.reserved,
+          ),
+        ),
+      );
 
-      setSelectedSeat(null);
-      setShow(false);
+      if (!isSeatAlreadyReserved) {
+        const reservedMessage = `Thank you for your reservation: ${selectedSeat.row} ${selectedSeat.seatLetter}`;
+        setReservedMessage(reservedMessage);
+
+        setFlights((prevFlights) =>
+          prevFlights.map((flight) => ({
+            ...flight,
+            seats: flight.seats.map((row) => ({
+              ...row,
+              seats: row.seats.map((seat) =>
+                row.rowNumber === selectedSeat.row &&
+                seat.seatLetter === selectedSeat.seatLetter
+                  ? { ...seat, reserved: true }
+                  : seat,
+              ),
+            })),
+          })),
+        );
+
+        setSelectedSeat(null);
+        setShow(false);
+      } else {
+        setReservedMessage(
+          "This seat is already reserved. Please choose another seat.",
+        );
+      }
     }
   };
-
   const handleRandomSeat = () => {
     const reservedSeats = flights.flatMap((flight) =>
       flight.seats.flatMap((row) => row.seats.filter((seat) => seat.reserved)),
@@ -61,7 +92,9 @@ const App = () => {
 
         if (
           !reservedSeats.some(
-            (reservedSeat) => reservedSeat.seatLetter === seatLetter,
+            (reservedSeat) =>
+              reservedSeat.row === row &&
+              reservedSeat.seatLetter === seatLetter,
           )
         ) {
           setSelectedSeat(seat);
@@ -106,7 +139,7 @@ const App = () => {
               <>
                 <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50"></div>
                 <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 ">
-                  <div className="bg-black w-[600px] h-[900px] border-4 border-Red p-4 rounded-md">
+                  <div className="bg-black w-[600px] h-[1000px] border-4 border-Red p-4 rounded-md">
                     <button
                       className="text-Red text-2xl font-bold absolute top-2 right-2 m-4"
                       onClick={() => setSelectedFlight(null)}
