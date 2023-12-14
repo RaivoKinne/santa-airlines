@@ -12,6 +12,7 @@ const App = () => {
     row: number;
     seatLetter: string;
   } | null>(null);
+  const [reservedMessage, setReservedMessage] = useState<string | null>(null);
 
   const [show, setShow] = useState(false);
 
@@ -36,9 +37,39 @@ const App = () => {
   };
 
   const handleReserveClick = () => {
-    console.log("Reserving seat:", selectedSeat, "for flight:", selectedFlight);
-    setSelectedSeat(null);
-    setShow(false);
+    if (selectedSeat) {
+      const reservedMessage = `Thank you for your reservation: ${selectedSeat.row} ${selectedSeat.seatLetter}`;
+      setReservedMessage(reservedMessage);
+
+      setSelectedSeat(null);
+      setShow(false);
+    }
+  };
+
+  const handleRandomSeat = () => {
+    const reservedSeats = flights.flatMap((flight) =>
+      flight.seats.flatMap((row) => row.seats.filter((seat) => seat.reserved)),
+    );
+
+    for (let row = 1; row <= 10; row++) {
+      for (
+        let seatLetter = "A";
+        seatLetter <= "F";
+        seatLetter = String.fromCharCode(seatLetter.charCodeAt(0) + 1)
+      ) {
+        const seat = { row, seatLetter };
+
+        if (
+          !reservedSeats.some(
+            (reservedSeat) => reservedSeat.seatLetter === seatLetter,
+          )
+        ) {
+          setSelectedSeat(seat);
+          setShow(true);
+          return;
+        }
+      }
+    }
   };
 
   return (
@@ -86,7 +117,10 @@ const App = () => {
                       <h2 className="text-7xl text-Green mt-4">
                         Seat reservation
                       </h2>
-                      <button className="text-2xl border-Green border-1 p-2 w-[250px] rounded-md my-4">
+                      <button
+                        className="text-2xl border-Green border-2 p-2 w-[250px] rounded-md my-4"
+                        onClick={() => handleRandomSeat()}
+                      >
                         Pick a random seat
                       </button>
                       {selectedFlight.seats.map((row) => (
@@ -125,10 +159,7 @@ const App = () => {
                           </button>
                         </>
                       ) : (
-                        <p>
-                          Thank you for the reservation: {selectedSeat?.row}{" "}
-                          {selectedSeat?.seatLetter}
-                        </p>
+                        reservedMessage && <p>{reservedMessage}</p>
                       )}{" "}
                     </div>{" "}
                   </div>
